@@ -3,6 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\JWTAuthController;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -24,9 +28,11 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'auth'
 ], function () {
-    Route::post('register', 'JWTAuthController@register');
-    Route::post('login', 'JWTAuthController@login');
-    Route::post('logout', 'JWTAuthController@logout');
-    Route::post('refresh', 'JWTAuthController@refresh');
-    Route::get('profile', 'JWTAuthController@profile');
+    Route::post('register', [App\Http\Controllers\JWTAuthController::class, 'register']);
+    Route::post('login', [App\Http\Controllers\JWTAuthController::class, 'login']);
+    Route::post('logout', [App\Http\Controllers\JWTAuthController::class, 'logout']);
+    Route::post('refresh', [App\Http\Controllers\JWTAuthController::class, 'refresh']);
+    Route::get('profile', [App\Http\Controllers\JWTAuthController::class, 'profile']);
+
+    Route::apiResource('products', ProductController::class);
 });
