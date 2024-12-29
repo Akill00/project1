@@ -8,12 +8,15 @@ class Product extends Model
 {
     // Các cột được phép ghi dữ liệu (mass assignable)
     protected $fillable = [
-        'name', 'description', 'price', 'quantity'
+        'name', 'description', 'price', 'quantity', 'user_id' // Thêm 'user_id'
     ];
 
-    // Quan hệ với User (giả sử mỗi sản phẩm thuộc về một người dùng)
+    /**
+     * Quan hệ với User.
+     * Mỗi sản phẩm thuộc về một người dùng.
+     */
     public function user()
     {
-        return $this->belongsTo(User::class);
-    }
+        return $this->belongsTo(App\Models\User::class);
+    }    
 }

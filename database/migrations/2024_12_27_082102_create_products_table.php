@@ -20,9 +20,11 @@ class CreateProductsTable extends Migration
             $table->decimal('price', 10, 2); // Giá sản phẩm
             $table->integer('quantity'); // Số lượng tồn kho
             $table->timestamps();
+
+            $table->unsignedBigInteger('user_id'); // ID của người dùng
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
-
 
     /**
      * Reverse the migrations.
@@ -31,6 +33,12 @@ class CreateProductsTable extends Migration
      */
     public function down()
     {
+        // Xóa khóa ngoại trước khi xóa bảng
+        Schema::table('products', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+
+        // Xóa bảng products
         Schema::dropIfExists('products');
     }
 }
