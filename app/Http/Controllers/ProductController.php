@@ -10,14 +10,18 @@ use Illuminate\Support\Facades\Auth;
 class ProductController extends Controller
 {
     // Lấy danh sách sản phẩm
-    public function index()
-    {
-        //$products = Product::all();
-       // return response()->json($products);
-
-        $products = Auth::user()->products; // Lấy sản phẩm của người dùng đăng nhập
-        return response()->json($products);
+    public function index(){
+        try    {
+            //$products = Product::all();
+           // return response()->json($products);
+    
+            $products = Auth::user()->products; // Lấy sản phẩm của người dùng đăng nhập
+            return response()->json($products);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
+    
 
     // Tạo sản phẩm mới
     public function store(Request $request)
