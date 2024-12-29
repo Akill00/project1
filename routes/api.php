@@ -24,15 +24,19 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 */
 
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'auth'
-], function () {
-    Route::post('register', [App\Http\Controllers\JWTAuthController::class, 'register']);
-    Route::post('login', [App\Http\Controllers\JWTAuthController::class, 'login']);
-    Route::post('logout', [App\Http\Controllers\JWTAuthController::class, 'logout']);
-    Route::post('refresh', [App\Http\Controllers\JWTAuthController::class, 'refresh']);
-    Route::get('profile', [App\Http\Controllers\JWTAuthController::class, 'profile']);
+Route::middleware('api')->group(function () {
+    // Lấy danh sách sản phẩm
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
 
-    Route::apiResource('products', ProductController::class);
+    // Lấy chi tiết một sản phẩm
+    Route::get('products/{id}', [ProductController::class, 'show'])->name('products.show');
+
+    // Tạo sản phẩm mới
+    Route::post('products', [ProductController::class, 'store'])->name('products.store');
+
+    // Cập nhật sản phẩm
+    Route::put('products/{id}', [ProductController::class, 'update'])->name('products.update');
+
+    // Xóa sản phẩm
+    Route::delete('products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 });

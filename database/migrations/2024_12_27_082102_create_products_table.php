@@ -18,7 +18,7 @@ class CreateProductsTable extends Migration
             $table->string('name'); // Tên sản phẩm
             $table->text('description')->nullable(); // Mô tả sản phẩm
             $table->decimal('price', 10, 2); // Giá sản phẩm
-            $table->integer('stock'); // Số lượng tồn kho
+            $table->integer('quantity'); // Số lượng tồn kho
             $table->timestamps();
         });
     }
