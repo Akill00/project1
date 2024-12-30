@@ -10,19 +10,21 @@ use Illuminate\Support\Facades\Auth;
 class ProductController extends Controller
 {
     // Lấy danh sách sản phẩm
-    public function index(){
-        try    {
-            //$products = Product::all();
-           // return response()->json($products);
-    
-            $products = Auth::user()->products; // Lấy sản phẩm của người dùng đăng nhập
-            return response()->json($products);
+    public function index()
+    {
+        try {
+            // Lấy sản phẩm của người dùng đăng nhập
+            $products = Auth::user()->products;
+            return response()->json($products, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Something went wrong',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
-    
 
+    
     // Tạo sản phẩm mới
     public function store(Request $request)
     {
@@ -33,7 +35,9 @@ class ProductController extends Controller
             'quantity' => 'required|integer',
         ]);
 
-        $product = Product::create($validatedData);
+        // Tạo sản phẩm mới
+        $product = Product::create(array_merge($validatedData, ['user_id' => Auth::id()]));
+
         return response()->json($product, 201);
     }
 
@@ -44,12 +48,14 @@ class ProductController extends Controller
     
         // Kiểm tra quyền sở hữu
         if ($product->user_id !== Auth::id()) {
-            return response()->json(['error' => 'Unauthorized access'], 403);
+            return response()->json([
+                'error' => 'Unauthorized access'
+            ], 403);
         }
-    
-        return response()->json($product);
+
+        return response()->json($product, 200);
     }
-    
+
 
     // Cập nhật sản phẩm
     public function update(Request $request, $id)
@@ -57,7 +63,9 @@ class ProductController extends Controller
         $product = Product::find($id);
 
         if (!$product) {
-            return response()->json(['error' => 'Product not found'], 404);
+            return response()->json([
+                'error' => 'Product not found'
+            ], 404);
         }
 
         $validatedData = $request->validate([
@@ -68,7 +76,7 @@ class ProductController extends Controller
         ]);
 
         $product->update($validatedData);
-        return response()->json($product);
+        return response()->json($product, 200);
     }
 
     // Xóa sản phẩm
@@ -77,10 +85,14 @@ class ProductController extends Controller
         $product = Product::find($id);
 
         if (!$product) {
-            return response()->json(['error' => 'Product not found'], 404);
+            return response()->json([
+                'error' => 'Product not found'
+            ], 404);
         }
 
         $product->delete();
-        return response()->json(['message' => 'Product deleted successfully']);
+        return response()->json([
+            'message' => 'Product deleted successfully'
+        ], 200);
     }
 }
