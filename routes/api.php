@@ -23,8 +23,20 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 */
+Route::group([
+        'middleware' => 'api',  
+], function () {
+    Route::post('register', [JWTAuthController::class, 'register'])->name('register');
+    Route::post('login', [JWTAuthController::class, 'login'])->name('login');
+    Route::post('logout', [JWTAuthController::class, 'logout'])->name('logout');
+    Route::post('refresh', [JWTAuthController::class, 'refresh'])->name('refresh');
+    Route::get('profile', [JWTAuthController::class, 'profile'])->name('profile');
+});
 
-Route::middleware('api')->group(function () {
+//Route::group([
+//        'middleware' => 'api',  
+//], function () {
+    Route::group(['middleware' => 'auth:api'], function () {
     // Lấy danh sách sản phẩm
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
 

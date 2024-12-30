@@ -14,7 +14,12 @@ class ProductController extends Controller
     {
         try {
             // Lấy sản phẩm của người dùng đăng nhập
-            $products = Auth::user()->products;
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['error' => 'User not authenticated'], 401);
+            }
+    
+            $products = $user->products; // Kiểm tra quan hệ products đã được định nghĩa trong User model
             return response()->json($products, 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -23,8 +28,8 @@ class ProductController extends Controller
             ], 500);
         }
     }
-
     
+
     // Tạo sản phẩm mới
     public function store(Request $request)
     {
@@ -34,18 +39,31 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'quantity' => 'required|integer',
         ]);
-
+    
+        // Kiểm tra user hiện tại
+        $userId = Auth::id();
+        if (!$userId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized user'
+            ], 401);
+        }
+    
         // Tạo sản phẩm mới
-        $product = Product::create(array_merge($validatedData, ['user_id' => Auth::id()]));
-
-        return response()->json($product, 201);
+        $product = Product::create(array_merge($validatedData, ['user_id' => $userId]));
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Product created successfully',
+            'product' => $product
+        ], 201);
     }
 
     // Lấy chi tiết một sản phẩm
     public function show($id)
     {
         $product = Product::findOrFail($id);
-    
+
         // Kiểm tra quyền sở hữu
         if ($product->user_id !== Auth::id()) {
             return response()->json([
@@ -55,7 +73,6 @@ class ProductController extends Controller
 
         return response()->json($product, 200);
     }
-
 
     // Cập nhật sản phẩm
     public function update(Request $request, $id)

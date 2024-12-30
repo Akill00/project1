@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+
+use Illuminate\Support\Facades\Log;
+
 
 class JWTAuthController extends Controller
 {
@@ -45,19 +48,69 @@ class JWTAuthController extends Controller
 
     public function logout()
     {
-        JWTAuth::invalidate();
+        try {
+            // Kiểm tra token trước khi invalidate
+            $token = JWTAuth::getToken();
 
-        return response()->json(['message' => 'Successfully logged out']);
+            if (!$token) {
+                return response()->json(['error' => 'Token not provided'], 400);
+            }
+
+            JWTAuth::invalidate($token);
+
+            return response()->json(['message' => 'Successfully logged out'], 200);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            return response()->json(['error' => 'Failed to logout, token might be invalid or missing'], 500);
+        }
     }
+
 
     public function refresh()
     {
-        return $this->createNewToken(JWTAuth::refresh());
+        try {
+            // Kiểm tra token hiện tại
+            $token = JWTAuth::getToken();
+            if (!$token) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Token is missing or invalid',
+                ], 400);
+            }
+
+            // Làm mới token
+            $newToken = JWTAuth::refresh();
+
+            // Trả về token mới
+            return response()->json([
+                'status' => true,
+                'message' => 'Token refreshed successfully',
+                'token' => $newToken
+            ], 200);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            // Xử lý lỗi nếu không thể làm mới token
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to refresh token',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function profile()
     {
-        return response()->json(auth()->user());
+        //return response()->json(auth()->user());
+        Log::info('Request received in profile endpoint');
+
+    try {
+        $user = JWTAuth::parseToken()->authenticate();
+        Log::info('Authenticated user:', ['user' => $user]);
+
+        return response()->json($user);
+    } catch (\Exception $e) {
+        Log::error('Error in profile endpoint:', ['error' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
     }
 
     protected function createNewToken($token)
