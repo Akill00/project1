@@ -30,7 +30,7 @@ public function index(Request $request)
 
         return $this->response(true, 'Products retrieved successfully', $products);
     } catch (\Exception $e) {
-        return $this->response(false, 'Something went wrong', $e->getMessage(), 500);
+        return $this->response(false, 'Something went wrong', null, 500);
     }
 }
 
