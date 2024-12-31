@@ -4,31 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Auth;
 
-class ProductController extends Controller
+class ProductController extends ApiController
 {
-    // Lấy danh sách sản phẩm
-    public function index()
-    {
-        try {
-            // Lấy sản phẩm của người dùng đăng nhập
-            $user = Auth::user();
-            if (!$user) {
-                return response()->json(['error' => 'User not authenticated'], 401);
-            }
-    
-            $products = $user->products; // Kiểm tra quan hệ products đã được định nghĩa trong User model
-            return response()->json($products, 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Something went wrong',
-                'message' => $e->getMessage()
-            ], 500);
+// Lấy danh sách sản phẩm
+public function index(Request $request)
+{
+    try {
+        $user = Auth::user();
+        if (!$user) {
+            return $this->response(false, 'User not authenticated', null, 401);
         }
+
+        // Query sản phẩm của người dùng
+        $query = $user->products();
+
+        // Nếu có tham số search, áp dụng tìm kiếm theo name
+        if ($request->has('search') && $request->search !== null) {
+            $query->where('name', 'LIKE', '%' . $request->search . '%');
+        }
+
+        // Lấy danh sách sản phẩm
+        $products = $query->get();
+
+        return $this->response(true, 'Products retrieved successfully', $products);
+    } catch (\Exception $e) {
+        return $this->response(false, 'Something went wrong', $e->getMessage(), 500);
     }
-    
+}
 
     // Tạo sản phẩm mới
     public function store(Request $request)
@@ -39,77 +43,73 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'quantity' => 'required|integer',
         ]);
-    
-        // Kiểm tra user hiện tại
+
         $userId = Auth::id();
         if (!$userId) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthorized user'
-            ], 401);
+            return $this->response(false, 'Unauthorized user', null, 401);
         }
-    
-        // Tạo sản phẩm mới
+
         $product = Product::create(array_merge($validatedData, ['user_id' => $userId]));
-    
-        return response()->json([
-            'status' => true,
-            'message' => 'Product created successfully',
-            'product' => $product
-        ], 201);
+
+        return $this->response(true, 'Product created successfully', $product, 201);
     }
 
     // Lấy chi tiết một sản phẩm
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        try {
+            $product = Product::findOrFail($id);
 
-        // Kiểm tra quyền sở hữu
-        if ($product->user_id !== Auth::id()) {
-            return response()->json([
-                'error' => 'Unauthorized access'
-            ], 403);
+            if ($product->user_id !== Auth::id()) {
+                return $this->response(false, 'Unauthorized access', null, 403);
+            }
+
+            return $this->response(true, 'Product retrieved successfully', $product);
+        } catch (\Exception $e) {
+            return $this->response(false, 'Product not found', null, 404);
         }
-
-        return response()->json($product, 200);
     }
 
     // Cập nhật sản phẩm
     public function update(Request $request, $id)
     {
-        $product = Product::find($id);
+        try {
+            $product = Product::findOrFail($id);
 
-        if (!$product) {
-            return response()->json([
-                'error' => 'Product not found'
-            ], 404);
+            if ($product->user_id !== Auth::id()) {
+                return $this->response(false, 'Unauthorized access', null, 403);
+            }
+
+            $validatedData = $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'sometimes|required|numeric',
+                'quantity' => 'sometimes|required|integer',
+            ]);
+
+            $product->update($validatedData);
+
+            return $this->response(true, 'Product updated successfully', $product);
+        } catch (\Exception $e) {
+            return $this->response(false, 'Product not found', null, 404);
         }
-
-        $validatedData = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'sometimes|required|numeric',
-            'quantity' => 'sometimes|required|integer',
-        ]);
-
-        $product->update($validatedData);
-        return response()->json($product, 200);
     }
 
     // Xóa sản phẩm
     public function destroy($id)
     {
-        $product = Product::find($id);
+        try {
+            $product = Product::findOrFail($id);
 
-        if (!$product) {
-            return response()->json([
-                'error' => 'Product not found'
-            ], 404);
+            if ($product->user_id !== Auth::id()) {
+                return $this->response(false, 'Unauthorized access', null, 403);
+            }
+
+            $product->delete();
+
+            return $this->response(true, 'Product deleted successfully');
+        } catch (\Exception $e) {
+            return $this->response(false, 'Product not found', null, 404);
         }
-
-        $product->delete();
-        return response()->json([
-            'message' => 'Product deleted successfully'
-        ], 200);
     }
 }
