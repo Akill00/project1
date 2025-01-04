@@ -18,21 +18,22 @@ public function index(Request $request)
         }
 
         // Query sản phẩm của người dùng
-        $query = $user->products();
+        $query = $user->products()->orderBy('created_at', 'desc'); // Sắp xếp từ mới nhất đến cũ nhất
 
         // Nếu có tham số search, áp dụng tìm kiếm theo name
         if ($request->has('search') && $request->search !== null) {
             $query->where('name', 'LIKE', '%' . $request->search . '%');
         }
 
-        // Lấy danh sách sản phẩm
-        $products = $query->get();
+        // Sử dụng phân trang, mỗi lần trả về 10 sản phẩm
+        $products = $query->paginate(10);
 
         return $this->response(true, 'Products retrieved successfully', $products);
     } catch (\Exception $e) {
         return $this->response(false, 'Something went wrong', null, 500);
     }
 }
+
 
     // Tạo sản phẩm mới
     public function store(Request $request)
