@@ -26,7 +26,9 @@ public function index(Request $request)
         }
 
         // Sử dụng phân trang, mỗi lần trả về 10 sản phẩm
-        $products = $query->paginate(10);
+        //$products = $query->paginate(10);
+        $products = $query->paginate(2); // Hiển thị 2 sản phẩm mỗi trang
+
 
         return $this->response(true, 'Products retrieved successfully', $products);
     } catch (\Exception $e) {

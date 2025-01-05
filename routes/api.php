@@ -52,3 +52,9 @@ Route::group([
     // Xóa sản phẩm
     Route::delete('products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 });
+
+Route::group([
+    'middleware' => ['api', 'auth:api', 'check.even.product'],
+], function () {
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+});
