@@ -15,24 +15,34 @@ class CheckEvenProductId
      * @param  \Closure  $next
      * @return mixed
      */
-        public function handle(Request $request, Closure $next)
-    {
-        $response = $next($request);
-        $content = json_decode($response->getContent(), true);
+public function handle(Request $request, Closure $next)
+{
+    // Lấy ID sản phẩm từ tham số route
+    $productId = $request->route('id');
 
-        if (isset($content['data']['data']) && is_array($content['data']['data'])) {
-            foreach ($content['data']['data'] as $product) {
-                if (isset($product['id']) && $product['id'] % 2 !== 0) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Access denied. Product ID must be even.',
-                    ], 403);
-                }
-            }
+        // Nếu không có ID hoặc ID không phải số nguyên hợp lệ, bỏ qua kiểm tra
+        if (!is_numeric($productId)) {
+            return $next($request);
         }
 
-        return $response;
-    }
+        // Lấy sản phẩm từ database
+        $product = \App\Models\Product::find($productId);
 
+        // Nếu sản phẩm không tồn tại, bỏ qua và để controller xử lý
+        if (!$product) {
+            return $next($request);
+        }
+
+
+        // Kiểm tra nếu có ID và ID đó là số lẻ
+        if ($productId && $productId % 2 !== 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied. Product ID must be even.',
+            ], 403);
+        }
+
+        return $next($request);
+    }
 
 }

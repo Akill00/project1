@@ -6,6 +6,8 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Jobs\CountProductsJob;
+
 class ProductController extends ApiController
 {
 // Lấy danh sách sản phẩm
@@ -60,19 +62,21 @@ public function index(Request $request)
     // Lấy chi tiết một sản phẩm
     public function show($id)
     {
-        try {
-            $product = Product::findOrFail($id);
-
-            if ($product->user_id !== Auth::id()) {
-                return $this->response(false, 'Unauthorized access', null, 403);
-            }
-
-            return $this->response(true, 'Product retrieved successfully', $product);
-        } catch (\Exception $e) {
+        $product = Product::find($id);
+    
+        // Kiểm tra nếu sản phẩm không tồn tại
+        if (!$product) {
             return $this->response(false, 'Product not found', null, 404);
         }
+    
+        // Kiểm tra quyền sở hữu
+        if ($product->user_id !== Auth::id()) {
+            return $this->response(false, 'Unauthorized access', null, 403);
+        }
+    
+        return $this->response(true, 'Product retrieved successfully', $product);
     }
-
+    
     // Cập nhật sản phẩm
     public function update(Request $request, $id)
     {
@@ -115,4 +119,32 @@ public function index(Request $request)
             return $this->response(false, 'Product not found', null, 404);
         }
     }
+
+
+    public function countProducts()
+    {
+        // Gọi trực tiếp logic đếm sản phẩm
+        $count = Product::count(); // Giả sử bạn đang đếm số lượng sản phẩm
+    
+        // Trả về phản hồi với kết quả
+        return response()->json([
+            'status' => true,
+            'count' => $count,
+            'message' => 'Products counted successfully.',
+        ], 200);
+    }
+
+
+   /* public function countProducts()
+    {
+        // Trực tiếp đếm số lượng sản phẩm mà không cần sử dụng job
+        $count = Product::count();
+
+        // Trả về số lượng sản phẩm
+        return response()->json(['count' => $count]);
+    }
+    */
+
+
+
 }

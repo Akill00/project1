@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\JWTAuthController;
 
+use App\Jobs\CountProductsJob;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,8 @@ Route::group([
     Route::post('logout', [JWTAuthController::class, 'logout'])->name('logout');
     Route::post('refresh', [JWTAuthController::class, 'refresh'])->name('refresh');
     Route::get('profile', [JWTAuthController::class, 'profile'])->name('profile');
+
+    Route::get('products/count', [ProductController::class, 'countProducts'])->name('products.count');
 });
 
 //Route::group([
@@ -51,10 +54,9 @@ Route::group([
 
     // Xóa sản phẩm
     Route::delete('products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
-});
 
-Route::group([
-    'middleware' => ['api', 'auth:api', 'check.even.product'],
-], function () {
-    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    // Áp dụng middleware cho route show product
+    Route::get('products/{id}', [ProductController::class, 'show'])
+    ->middleware('check.even.product')
+    ->name('products.show');
 });
