@@ -133,7 +133,7 @@ public function index(Request $request)
         $count = Redis::get('total_products');
         return response()->json([
             'status' => true,
-            'count' => $count,
+            //'count' => $count,
             'message' => 'Products counted successfully.',
         ], 200);
     } 
