@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
+
 
 use App\Jobs\CountProductsJob;
 
@@ -123,16 +126,17 @@ public function index(Request $request)
 
     public function countProducts()
     {
-        // Gọi trực tiếp logic đếm sản phẩm
-        $count = Product::count(); // Giả sử bạn đang đếm số lượng sản phẩm
-    
+        // Dispatch job để đếm sản phẩm
+        CountProductsJob::dispatch();
+        Log::info('CountProducts job dispatched.');
         // Trả về phản hồi với kết quả
+        $count = Redis::get('total_products');
         return response()->json([
             'status' => true,
             'count' => $count,
             'message' => 'Products counted successfully.',
         ], 200);
-    }
+    } 
 
 
    /* public function countProducts()
