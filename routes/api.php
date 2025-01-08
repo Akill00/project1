@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\JWTAuthController;
 
 use App\Jobs\CountProductsJob;
+use App\Http\Controllers\MailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,9 @@ Route::group([
     Route::get('profile', [JWTAuthController::class, 'profile'])->name('profile');
 
     Route::get('products/count', [ProductController::class, 'countProducts'])->name('products.count');
+    //API gửi mail
+    Route::post('send-email', [MailController::class, 'sendEmail'])->name('send.email');
+
 });
 
 //Route::group([
