@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
+use App\Http\Controllers\ApiController;
+
 use Illuminate\Support\Facades\Log;
 
 

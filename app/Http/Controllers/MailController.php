@@ -26,6 +26,12 @@ class MailController extends Controller
         $toEmail = $request->email;
         $content = $request->content;
 
+        // Dispatch job để gửi email
+        Log::info('Đang dispatch job gửi email', [
+            'to_email' => $toEmail,
+            'content' => $content,
+        ]);
+        
         // try - catch để bắt lỗi khi gửi email
         try {
             // Gửi email

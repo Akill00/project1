@@ -1,0 +1,107 @@
+[33mcommit 58a7e78284842b5f28a19494f5c74d2053aa5992[m[33m ([m[1;36mHEAD -> [m[1;32mdev[m[33m, [m[1;31morigin/dev[m[33m)[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Wed Jan 8 17:16:46 2025 +0700
+
+    Send email
+
+[33mcommit 45b5533bafe6007b71032af18b924c365654ae2e[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Tue Jan 7 20:21:52 2025 +0700
+
+    Add product counting logic to CountProductsJob
+
+[33mcommit c6c7b5fa7251d600827a2c55c0bbeca4aee6b47d[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Tue Jan 7 20:14:03 2025 +0700
+
+    Add product counting logic to CountProductsJob
+
+[33mcommit 8be223c5ab4dedf82fcc89d5d4b768366349e754[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Mon Jan 6 21:02:24 2025 +0700
+
+     Queues _ countProducts
+
+[33mcommit f9b86efda792d71ddeecc748ad927b34a849266a[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Sun Jan 5 17:22:42 2025 +0700
+
+    middleware nhận product id chẵn
+
+[33mcommit 50d2411a9d380e15c22a6f5daf7c2e7ebc315452[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Sat Jan 4 18:12:43 2025 +0700
+
+     phân trang
+
+[33mcommit ef5af69df9091305f66999119b498a0143269af9[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Tue Dec 31 16:26:50 2024 +0700
+
+    chuẩn restful response + Search By Name
+
+[33mcommit 3c426dc28effbc548f53844a8404bfea925e77d1[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Tue Dec 31 11:43:02 2024 +0700
+
+    chuẩn restful response + Search By Name
+
+[33mcommit e9c3219936868c8598160f4f0a8dc2bc2b9b6fa0[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Tue Dec 31 02:51:25 2024 +0700
+
+    debug cho user và product + test postman
+
+[33mcommit a5e6d88a5ff613f1ee979a3f46ad827987d3b839[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Mon Dec 30 09:52:02 2024 +0700
+
+    lỗi postman trả về html
+
+[33mcommit 390bb556be4ee382aec7f4cb40f966e7945b797b[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Sun Dec 29 19:05:23 2024 +0700
+
+    Thông điệp commit
+
+[33mcommit 5afc9822031d629b75563b07e9f96510e1733426[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Sun Dec 29 16:42:57 2024 +0700
+
+    relationship với user
+
+[33mcommit 401c13753c6d659685aae2acb6b5c30e6b0f1e32[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Sun Dec 29 12:46:51 2024 +0700
+
+     full CRUD
+
+[33mcommit aedf3bf4550a24ce82bc9443b4eb984800434998[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Sat Dec 28 17:15:17 2024 +0700
+
+    Lỗi route
+
+[33mcommit efb8399b14526d19e78c357082624471805897f1[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Tue Dec 24 15:12:16 2024 +0700
+
+    x
+
+[33mcommit 0a0b00f982ca8144f6daead92b4f18b7838aac6c[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Mon Dec 23 18:21:13 2024 +0700
+
+    Tích hợp JWT với Model  + Cấu hình Auth Guard
+
+[33mcommit f77c61ac5e7d694d7ddc02e7fd9a54d2c6772a14[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Mon Dec 23 17:11:14 2024 +0700
+
+    Set up JWT
+
+[33mcommit ba89c4b344cddfd11b0bbc1b2d1386e1ef899011[m
+Author: dangngoctrien <dangtrien0@gmail.com>
+Date:   Sun Dec 22 12:53:45 2024 +0700
+
+    Initial commit
