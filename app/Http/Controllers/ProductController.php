@@ -13,33 +13,32 @@ use App\Jobs\CountProductsJob;
 
 class ProductController extends ApiController
 {
-// Lấy danh sách sản phẩm
-public function index(Request $request)
-{
-    try {
-        $user = Auth::user();
-        if (!$user) {
-            return $this->response(false, 'User not authenticated', null, 401);
+    // Lấy danh sách sản phẩm
+    public function index(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return $this->response(false, 'User not authenticated', null, 401);
+            }
+
+            // Lấy tất cả sản phẩm của user, bao gồm cả comment và user của comment
+            $query = $user->products()->with(['comments.user'])->orderBy('created_at', 'desc');
+
+            // Nếu có tham số search, áp dụng tìm kiếm theo name
+            if ($request->has('search') && $request->search !== null) {
+                $query->where('name', 'LIKE', '%' . $request->search . '%');
+            }
+
+            // Sử dụng phân trang, mỗi lần trả về 2 sản phẩm
+            $products = $query->paginate(2);
+
+            return $this->response(true, 'Products retrieved successfully', $products);
+        } catch (\Exception $e) {
+            return $this->response(false, 'Something went wrong', null, 500);
         }
-
-        // Query sản phẩm của người dùng
-        $query = $user->products()->orderBy('created_at', 'desc'); // Sắp xếp từ mới nhất đến cũ nhất
-
-        // Nếu có tham số search, áp dụng tìm kiếm theo name
-        if ($request->has('search') && $request->search !== null) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%');
-        }
-
-        // Sử dụng phân trang, mỗi lần trả về 10 sản phẩm
-        //$products = $query->paginate(10);
-        $products = $query->paginate(2); // Hiển thị 2 sản phẩm mỗi trang
-
-
-        return $this->response(true, 'Products retrieved successfully', $products);
-    } catch (\Exception $e) {
-        return $this->response(false, 'Something went wrong', null, 500);
     }
-}
+
 
 
     // Tạo sản phẩm mới
@@ -65,20 +64,22 @@ public function index(Request $request)
     // Lấy chi tiết một sản phẩm
     public function show($id)
     {
-        $product = Product::find($id);
-    
+        // Lấy sản phẩm theo id, bao gồm cả comment và user của comment
+        $product = Product::with(['comments.user'])->find($id);
+
         // Kiểm tra nếu sản phẩm không tồn tại
         if (!$product) {
             return $this->response(false, 'Product not found', null, 404);
         }
-    
+
         // Kiểm tra quyền sở hữu
         if ($product->user_id !== Auth::id()) {
             return $this->response(false, 'Unauthorized access', null, 403);
         }
-    
+
         return $this->response(true, 'Product retrieved successfully', $product);
     }
+
     
     // Cập nhật sản phẩm
     public function update(Request $request, $id)

@@ -19,4 +19,13 @@ class Product extends Model
     {
         return $this->belongsTo(\App\Models\User::class);
     }    
+
+    /**
+     * Quan hệ với Comment.
+     * Mỗi sản phẩm có nhiều comment.
+     */
+    public function comments()
+    {
+        return $this->hasMany(\App\Models\ProductComment::class);
+    }
 }

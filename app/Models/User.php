@@ -45,14 +45,22 @@ class User extends Authenticatable implements JWTSubject
         return $this->getKey();
     }
 
+    // Lấy thông tin tùy chỉnh muốn chứa trong JWT
     public function getJWTCustomClaims()
     {
         return [];
     }
 
+    // Mối quan hệ với product
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    // Mối quan hệ với comment
+    public function comments()
+    {
+        return $this->hasMany(ProductComment::class);
     }
     
 }

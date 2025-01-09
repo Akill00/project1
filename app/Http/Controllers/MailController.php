@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
-class MailController extends Controller
+
+class MailController extends ApiController
 {
     public function sendEmail(Request $request)
     {
