@@ -108,19 +108,4 @@ class ProductCommentController extends ApiController
             return $this->response(false, 'Failed to delete comment', null, 500);
         }
     }
-
-    // Phương thức chuẩn hóa phản hồi
-    public function response($status, $message, $data = null, $code = 200)
-    {
-        $response = [
-            'status' => $status,
-            'message' => $message,
-        ];
-
-        if (!is_null($data)) {
-            $response['data'] = $data;
-        }
-
-        return response()->json($response, $code);
-    }
 }

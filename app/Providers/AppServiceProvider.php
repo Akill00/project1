@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Laravel\Telescope\Telescope;
+use Laravel\Telescope\TelescopeServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        if ($this->app->environment('local')) {
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     /**
@@ -23,6 +27,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // Các cấu hình boot khác (nếu có)
     }
 }
