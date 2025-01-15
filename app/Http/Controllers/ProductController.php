@@ -2,154 +2,140 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
-
-
-use App\Jobs\CountProductsJob;
+use App\Http\Controllers\ApiController;
+use App\Models\Product;
+use App\Repositories\ProductRepositoryInterface;
 
 class ProductController extends ApiController
 {
-    // Lấy danh sách sản phẩm
+    // Khai báo biến để lưu trữ ProductService
+    protected $productService;
+
+    // Khởi tạo ProductController với ProductService
+    public function __construct(ProductService $productService)
+    {
+        // Gán ProductService vào biến productService
+        $this->productService = $productService;
+    }
+
+    // Hàm lấy tất cả sản phẩm
     public function index(Request $request)
     {
         try {
-            $user = Auth::user();
-            if (!$user) {
-                return $this->response(false, 'User not authenticated', null, 401);
+            // Gọi hàm lấy tất cả sản phẩm từ ProductService
+            $result = $this->productService->getAllProducts($request);
+            // Nếu không lấy được sản phẩm thì trả về thông báo lỗi
+            if (!$result['success']) {
+                // Ghi log lỗi
+                Log::error('Failed to retrieve products', ['status' => $result['status'], 'message' => $result['message']]);
+                // Trả về thông báo lỗi
+                return $this->response(false, $result['message'], null, $result['status'] ?? 500);
             }
-
-            // Lấy tất cả sản phẩm của user, bao gồm cả comment và user của comment
-            $query = $user->products()->with(['comments.user'])->orderBy('created_at', 'desc');
-
-            // Nếu có tham số search, áp dụng tìm kiếm theo name
-            if ($request->has('search') && $request->search !== null) {
-                $query->where('name', 'LIKE', '%' . $request->search . '%');
-            }
-
-            // Sử dụng phân trang, mỗi lần trả về 2 sản phẩm
-            $products = $query->paginate(2);
-
-            return $this->response(true, 'Products retrieved successfully', $products);
+            // Trả về thông báo thành công và danh sách sản phẩm
+            return $this->response(true, 'Products retrieved successfully', $result['data'], 200);
         } catch (\Exception $e) {
-            return $this->response(false, 'Something went wrong', null, 500);
+            Log::error('Unexpected error in retrieving products', ['error' => $e->getMessage()]);
+            return $this->response(false, 'Unexpected error', null, 500);
         }
     }
 
-
-
-    // Tạo sản phẩm mới
-    public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'quantity' => 'required|integer',
-        ]);
-
-        $userId = Auth::id();
-        if (!$userId) {
-            return $this->response(false, 'Unauthorized user', null, 401);
-        }
-
-        $product = Product::create(array_merge($validatedData, ['user_id' => $userId]));
-
-        return $this->response(true, 'Product created successfully', $product, 201);
-    }
-
-    // Lấy chi tiết một sản phẩm
+    // Hàm lấy sản phẩm theo id
     public function show($id)
     {
-        // Lấy sản phẩm theo id, bao gồm cả comment và user của comment
-        $product = Product::with(['comments.user'])->find($id);
-
-        // Kiểm tra nếu sản phẩm không tồn tại
-        if (!$product) {
-            return $this->response(false, 'Product not found', null, 404);
+        try {
+            // Gọi hàm lấy sản phẩm theo id từ ProductService
+            $product = $this->productService->getProductById($id);
+            if (!$product) {
+                Log::warning('Product not found', ['product_id' => $id]);
+                return $this->response(false, 'Product not found', null, 404);
+            }
+            // Trả về thông báo thành công và sản phẩm
+            return $this->response(true, 'Product retrieved successfully', $product, 200);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error in retrieving product', ['product_id' => $id, 'error' => $e->getMessage()]);
+            return $this->response(false, 'Unexpected error', null, 500);
         }
-
-        // Kiểm tra quyền sở hữu
-        if ($product->user_id !== Auth::id()) {
-            return $this->response(false, 'Unauthorized access', null, 403);
-        }
-
-        return $this->response(true, 'Product retrieved successfully', $product);
     }
 
-    
-    // Cập nhật sản phẩm
+    // Hàm tạo sản phẩm
+    public function store(Request $request)
+    {
+        try {
+            // Validate dữ liệu request
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric',
+                'quantity' => 'required|integer',
+            ]);
+            // Gọi hàm tạo sản phẩm từ ProductService
+            $result = $this->productService->createProduct($validatedData);
+            if (!$result['success']) {
+                Log::error('Failed to create product', ['message' => $result['message']]);
+                return $this->response(false, $result['message'], null, $result['status']);
+            }
+            // Trả về thông báo thành công và sản phẩm đã tạo
+            return $this->response(true, 'Product created successfully', $result['data'], 201);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error in creating product', ['error' => $e->getMessage()]);
+            return $this->response(false, 'Unexpected error', null, 500);
+        }
+    }
+
+    // Hàm cập nhật sản phẩm
     public function update(Request $request, $id)
     {
         try {
-            $product = Product::findOrFail($id);
-
-            if ($product->user_id !== Auth::id()) {
-                return $this->response(false, 'Unauthorized access', null, 403);
-            }
-
             $validatedData = $request->validate([
                 'name' => 'sometimes|required|string|max:255',
                 'description' => 'nullable|string',
                 'price' => 'sometimes|required|numeric',
                 'quantity' => 'sometimes|required|integer',
             ]);
-
-            $product->update($validatedData);
-
-            return $this->response(true, 'Product updated successfully', $product);
+            // Gọi hàm cập nhật sản phẩm từ ProductService
+            $result = $this->productService->updateProduct($validatedData, $id);
+            if (!$result['success']) {
+                Log::error('Failed to update product', ['product_id' => $id, 'message' => $result['message']]);
+                return $this->response(false, $result['message'], null, $result['status']);
+            }
+            return $this->response(true, 'Product updated successfully', $result['data']);
         } catch (\Exception $e) {
-            return $this->response(false, 'Product not found', null, 404);
+            Log::error('Unexpected error in updating product', ['product_id' => $id, 'error' => $e->getMessage()]);
+            return $this->response(false, 'Unexpected error', null, 500);
         }
     }
 
-    // Xóa sản phẩm
+    // Hàm xóa sản phẩm
     public function destroy($id)
     {
         try {
-            $product = Product::findOrFail($id);
-
-            if ($product->user_id !== Auth::id()) {
-                return $this->response(false, 'Unauthorized access', null, 403);
+            // Gọi hàm xóa sản phẩm từ ProductService
+            $result = $this->productService->deleteProduct($id);
+            if (!$result['success']) {
+                Log::error('Failed to delete product', ['product_id' => $id, 'message' => $result['message']]);
+                return $this->response(false, $result['message'], null, $result['status']);
             }
-
-            $product->delete();
-
             return $this->response(true, 'Product deleted successfully');
         } catch (\Exception $e) {
-            return $this->response(false, 'Product not found', null, 404);
+            Log::error('Unexpected error in deleting product', ['product_id' => $id, 'error' => $e->getMessage()]);
+            return $this->response(false, 'Unexpected error', null, 500);
         }
     }
 
-
+    // Hàm đếm số lượng sản phẩm
     public function countProducts()
     {
-        // Dispatch job để đếm sản phẩm
-        CountProductsJob::dispatch();
-        Log::info('CountProducts job dispatched.');
-        // Trả về phản hồi với kết quả
-        $count = Redis::get('total_products');
-        return response()->json([
-            'status' => true,
-            //'count' => $count,
-            'message' => 'Products counted successfully.',
-        ], 200);
-    } 
-
-
-   /* public function countProducts()
-    {
-        // Trực tiếp đếm số lượng sản phẩm mà không cần sử dụng job
-        $count = Product::count();
-
-        // Trả về số lượng sản phẩm
-        return response()->json(['count' => $count]);
+        try {
+            // Gọi hàm đếm số lượng sản phẩm từ ProductService
+            $count = $this->productService->countProducts();
+            Log::info('Products counted', ['count' => $count]);
+            return $this->response(true, 'Products counted successfully.', ['count' => $count]);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error in counting products', ['error' => $e->getMessage()]);
+            return $this->response(false, 'Unexpected error', null, 500);
+        }
     }
-    */
-
-
-
 }
